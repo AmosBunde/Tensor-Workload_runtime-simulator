@@ -239,3 +239,31 @@ def run_all(path: Path, log=print) -> list[dict]:
             if (i + 1) % 100 == 0:
                 log(f"  {i + 1}/{len(todo)}")
     return load_points(path)
+
+
+def recheck(points_path: Path, out: Path, every: int = 6, log=print) -> list[dict]:
+    """Time a sample of the cases again and record old and new times side by side.
+
+    A descriptor is only as good as the state the machine was in when it was calibrated.
+    Running this later shows whether the machine has sped up or slowed down since.
+    """
+    old = {(p["id"], p["dtype"], p["threads"]): p for p in load_points(points_path)}
+    pin_to_cores()
+    torch.set_flush_denormal(True)
+    rows = []
+    for case in cases()[::every]:
+        if case.bench == "stream":
+            continue
+        for threads in THREADS:
+            key = (case.id, "float32", threads)
+            if key not in old:
+                continue
+            new = run_case(case, "float32", threads)
+            rows.append({"id": case.id, "op_class": new["op_class"], "threads": threads,
+                         "t_calibration": old[key]["t"], "t_recheck": new["t"],
+                         "other_cpus": new["other_cpus"]})
+    out.write_text("".join(json.dumps(r) + "\n" for r in rows))
+    ratios = sorted(r["t_calibration"] / r["t_recheck"] for r in rows)
+    log(f"{len(rows)} timings repeated; calibration time over recheck time, median "
+        f"{ratios[len(ratios) // 2]:.2f}")
+    return rows
