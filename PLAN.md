@@ -160,3 +160,44 @@ unchanged.
    produced absurd predictions in the dry run when a class was absent from training. The
    restricted version is the stronger opponent, so the change does not favour the
    simulator.
+
+### Made after the validation matrix was measured
+
+6. **A second analysis on the cells measured at full machine speed.** The second
+   measurement pass showed that the machine as a whole ran 1.2 to 2.7 times slower from
+   about minute 12 of the first pass until its end. On all cells, two measurements of the
+   same cell disagree by 28% on average, which is as large as the errors being compared.
+   I therefore ran every analysis twice: on all 1,152 cells as planned, and on the 495
+   cells measured in the first ten minutes of the first pass or in the second pass, where
+   repeats disagree by 15%. Cells were visited in random order, so the 495 are a random
+   subset. The ten-minute cut was chosen after looking at the drift, not before.
+7. **A recheck of the calibration.** After seeing the simulator over-predict, I re-timed
+   78 microbenchmark cases. They had taken a median of 1.41 times longer during
+   calibration. As an exploratory analysis, labelled as such, I report the simulator with
+   every prediction divided by that one constant.
+8. **The measurement stopped once at a 40-minute limit** with 99 cells and the whole
+   second pass still to do, and was resumed. Timed runs took about 65 minutes in total
+   (14.5 for microbenchmarks, 50.8 for workloads), over the 45 I had budgeted, not
+   counting two earlier microbenchmark runs that were discarded because of interference.
+9. **Figures show the simulator both ways**, as calibrated and with fitted corrections.
+   The plan did not say which predictors would be drawn.
+
+## Outcomes
+
+Verdicts are computed in `src/tracesim/stats.py` from the committed predictions. "Planned"
+is all 1,152 cells. "Clean" is the 495-cell analysis of amendment 6. MAPE in percent.
+
+| | Hypothesis | Planned analysis | Clean windows |
+|---|---|---|---|
+| H1 | Gradient boosting beats the simulator at interpolation | Not supported: 37.9 against 41.0, interval of the difference includes zero | Supported: 26.2 against 60.8 |
+| H2 | The simulator beats gradient boosting from small to large | Not supported: 53.9 against 54.7, interval includes zero | Failed: 83.8 against 55.3 |
+| H3 | The simulator beats gradient boosting on at least 3 of 4 unseen families | Supported: 3 of 4 | Failed: 2 of 4 |
+| H4 | The simulator beats both regressors on an unseen thread count | Not supported: 32.1 against 31.1 for gradient boosting | Failed: 48.5 against 19.5 |
+| H5 | The simulator's thread choice is within 10% of the best in 90% of cases | Failed: 54.2% of 192 choices | Failed: 50.0% of 16 choices |
+| H6 | FLOPs-proportional is the worst predictor in every design | Failed: gradient boosting is worse on unseen families | Failed: FLOPs is the worst only from small to large |
+| H7 | The simulator's MAPE over all cells is below 30% | Failed: 41.0 | Failed: 60.8 |
+
+One of seven held as planned, and that one did not survive the cleaner data. The
+hypotheses were all about the simulator calibrated from microbenchmarks alone. What I did
+not predict is in the report: the same simulator with one fitted correction per operator
+class was the most accurate predictor under every design.
