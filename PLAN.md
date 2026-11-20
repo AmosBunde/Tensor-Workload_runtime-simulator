@@ -138,9 +138,8 @@ measured workload time had been looked at when they were made. The hypotheses ar
 unchanged.
 
 1. **The device is two pinned cores, not four free ones.** Other jobs kept the machine
-   busy throughout. Unpinned, a four-thread operator that normally took 36 microseconds
-   sometimes took 3 milliseconds, because it had to wait for the scheduler to free four
-   cores at once. The process now pins itself to both hardware threads of two physical
+   busy throughout. Unpinned, a four-thread operator sometimes took many times its normal
+   time, because it had to wait for the scheduler to free four cores at once. The process now pins itself to both hardware threads of two physical
    cores. The thread counts are still 1, 2 and 4, but 4 threads now means two cores with
    hyperthreading. This changes what design (d) asks: it becomes "predict the hyperthreaded
    configuration from the one- and two-thread configurations". The descriptor gained a
@@ -201,3 +200,27 @@ One of seven held as planned, and that one did not survive the cleaner data. The
 hypotheses were all about the simulator calibrated from microbenchmarks alone. What I did
 not predict is in the report: the same simulator with one fitted correction per operator
 class was the most accurate predictor under every design.
+
+## Replication on a quiet machine (added 20 November 2026, before the second run)
+
+The first run was contaminated. Its calibration was taken while the machine ran slow, and
+most of its workload cells were measured during a machine-wide slowdown. The jobs that
+caused this have finished, so I am running the whole pipeline again: microbenchmarks,
+calibration, all 1,152 workload cells and the repeat pass.
+
+- **Nothing about the study changes.** The hypotheses, the four designs, the predictors,
+  the metrics and the analysis code are the ones above. The pinning to two cores and the
+  thread counts are the same.
+- **This is a replication, not a blind test.** I have seen the results of the first run.
+  The second run can show whether they were caused by the state of the machine. It cannot
+  have the standing of a prediction made in ignorance.
+- **The second run becomes the primary result**, analysed as planned on all cells. The
+  first run's files move to `results/run1/` and stay in the repository, and the report
+  will compare the two.
+- **One addition to the measurements.** A fixed small benchmark is timed every two
+  minutes during the microbenchmarks and the workload grid, with the CPU frequency, so
+  that drift in machine speed is measured directly. It is not used to correct anything.
+- **No clean-window analysis on the second run.** If the repeat pass again disagrees with
+  the first pass by more than 15% on average, which was the noise floor of the first
+  run's clean cells, I will report that and stop, not add corrections.
+- The time budget for the second run is 75 minutes of measurement.
