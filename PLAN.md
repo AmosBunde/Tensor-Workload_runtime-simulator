@@ -139,8 +139,8 @@ unchanged.
 
 1. **The device is two pinned cores, not four free ones.** Other jobs kept the machine
    busy throughout. Unpinned, a four-thread operator sometimes took many times its normal
-   time, because it had to wait for the scheduler to free four cores at once. The process now pins itself to both hardware threads of two physical
-   cores. The thread counts are still 1, 2 and 4, but 4 threads now means two cores with
+   time, because it had to wait for the scheduler to free four cores at once. The process
+   now pins itself to both hardware threads of two physical cores. The thread counts are still 1, 2 and 4, but 4 threads now means two cores with
    hyperthreading. This changes what design (d) asks: it becomes "predict the hyperthreaded
    configuration from the one- and two-thread configurations". The descriptor gained a
    per-class hyperthread yield. Under design (d) that yield cannot be calibrated and is set
@@ -181,25 +181,24 @@ unchanged.
 9. **Figures show the simulator both ways**, as calibrated and with fitted corrections.
    The plan did not say which predictors would be drawn.
 
-## Outcomes
+## Outcomes of the first run
 
-Verdicts are computed in `src/tracesim/stats.py` from the committed predictions. "Planned"
-is all 1,152 cells. "Clean" is the 495-cell analysis of amendment 6. MAPE in percent.
+Verdicts are computed in `src/tracesim/stats.py` from the committed predictions in
+`results/run1/`. "Planned" is all 1,152 cells. "Clean" is the 495-cell analysis of
+amendment 6. MAPE in percent. The numbers include the correction described in amendment
+10 below; the ones from before it are in `results/run1/summary_before_fix.json`.
 
 | | Hypothesis | Planned analysis | Clean windows |
 |---|---|---|---|
 | H1 | Gradient boosting beats the simulator at interpolation | Not supported: 37.9 against 41.0, interval of the difference includes zero | Supported: 26.2 against 60.8 |
-| H2 | The simulator beats gradient boosting from small to large | Not supported: 53.9 against 54.7, interval includes zero | Failed: 83.8 against 55.3 |
+| H2 | The simulator beats gradient boosting from small to large | Failed: 63.9 against 54.7 | Failed: 102.1 against 55.3 |
 | H3 | The simulator beats gradient boosting on at least 3 of 4 unseen families | Supported: 3 of 4 | Failed: 2 of 4 |
-| H4 | The simulator beats both regressors on an unseen thread count | Not supported: 32.1 against 31.1 for gradient boosting | Failed: 48.5 against 19.5 |
+| H4 | The simulator beats both regressors on an unseen thread count | Failed: 48.3 against 31.1 for gradient boosting | Failed: 78.7 against 19.5 |
 | H5 | The simulator's thread choice is within 10% of the best in 90% of cases | Failed: 54.2% of 192 choices | Failed: 50.0% of 16 choices |
-| H6 | FLOPs-proportional is the worst predictor in every design | Failed: gradient boosting is worse on unseen families | Failed: FLOPs is the worst only from small to large |
+| H6 | FLOPs-proportional is the worst predictor in every design | Failed | Failed |
 | H7 | The simulator's MAPE over all cells is below 30% | Failed: 41.0 | Failed: 60.8 |
 
-One of seven held as planned, and that one did not survive the cleaner data. The
-hypotheses were all about the simulator calibrated from microbenchmarks alone. What I did
-not predict is in the report: the same simulator with one fitted correction per operator
-class was the most accurate predictor under every design.
+One of seven held as planned, and that one did not survive the cleaner data.
 
 ## Replication on a quiet machine (added 20 November 2026, before the second run)
 
@@ -224,3 +223,46 @@ calibration, all 1,152 workload cells and the repeat pass.
   the first pass by more than 15% on average, which was the noise floor of the first
   run's clean cells, I will report that and stop, not add corrections.
 - The time budget for the second run is 75 minutes of measurement.
+
+### What happened in the second run
+
+- **The machine was not as steady as I had hoped.** Nothing else heavy was running, but
+  the reference benchmark shows the machine's speed moving with its clock frequency,
+  which ranged from 1,150 to 3,773 MHz. The slowest reading of the single-thread matrix
+  product was 2.49 times the fastest. The second pass ran slower than the first, and the
+  two passes disagree by 30.5% on average, twice my threshold of 15%.
+- **As stated above, I stopped there.** There is no clean-window analysis of the second
+  run and no correction by the reference benchmark. The planned analysis on all cells is
+  the result, and its noise is not well determined.
+- Timed measurement took 33 minutes (4.2 for microbenchmarks, 29.0 for workloads).
+
+10. **A defect in the analysis code, found and corrected after the second run.** In the
+    size and thread designs the simulator is recalibrated from a restricted set of
+    microbenchmarks. That recalibration read the number of cores from the machine
+    running the analysis, four, and not from the two pinned cores the measurements came
+    from. I found it because the second run's thread-design error looked wrong. Corrected,
+    the simulator's error in the second run went from 46.6% to 22.0% in the thread design
+    and from 20.8% to 19.1% in the size design. In the first run it went the other way:
+    from 53.9% to 63.9% (size) and 32.1% to 48.3% (threads) on all cells. No hypothesis
+    verdict changed in either run. The summaries from before the correction are kept as
+    `summary_before_fix.json` beside each `summary.json`. This is a change made after
+    seeing results, in a direction that helped the simulator in the run I now report
+    first, and it should be read with that in mind.
+
+## Outcomes of the replication
+
+Planned analysis, all 1,152 cells of the second run. MAPE in percent.
+
+| | Hypothesis | Second run | First run, planned analysis |
+|---|---|---|---|
+| H1 | Gradient boosting beats the simulator at interpolation | Not supported: gradient boosting 23.6, simulator 21.2; the interval of the difference includes zero | Not supported |
+| H2 | The simulator beats gradient boosting from small to large | Supported: 19.1 against 50.2, and against 48.2 for log-linear regression | Failed |
+| H3 | The simulator beats gradient boosting on at least 3 of 4 unseen families | Supported: 4 of 4 | Supported: 3 of 4 |
+| H4 | The simulator beats both regressors on an unseen thread count | Failed: 22.0 against 14.9 for gradient boosting | Failed |
+| H5 | The simulator's thread choice is within 10% of the best in 90% of cases | Failed: 65.6% of 192 choices | Failed |
+| H6 | FLOPs-proportional is the worst predictor in every design | Failed: gradient boosting is worse on unseen families | Failed |
+| H7 | The simulator's MAPE over all cells is below 30% | Supported: 21.2 | Failed |
+
+Three of seven held in the replication. H1 failed in the simulator's favour. H4 and H5
+failed against it. The simulator with fitted corrections, which no hypothesis was about,
+had errors of 17.1 to 18.0 across the four designs.
