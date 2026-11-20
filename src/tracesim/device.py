@@ -34,6 +34,9 @@ class OpClassModel:
     item_overhead_s: float = 0.0
     serial_fraction: float = 1.0
     fork_overhead_s: float = 0.0
+    # What a second hardware thread on an already busy core adds, in cores. Zero means
+    # hyperthreads add nothing; it can be negative when they get in each other's way.
+    smt_yield: float = 0.0
     # Cost of the backward pass relative to the forward pass, split the same way as the
     # forward cost: one ratio for the call overhead and one for the body.
     backward_overhead_ratio: float = 1.0
@@ -54,11 +57,19 @@ class DeviceDescriptor:
     # glibc's threshold tops out at 32 MiB. A first-touch rate of 0 turns the term off.
     fresh_alloc_threshold_bytes: int = 32 << 20
     first_touch_bytes_per_s: float = 0.0
+    smt: int = 1  # hardware threads per core
     simd: str = ""
     l1d_bytes: int = 0
     l2_bytes: int = 0
     notes: str = ""
     calibration: dict = field(default_factory=dict)
+
+    def effective_threads(self, threads: int, smt_yield: float = 0.0) -> float:
+        """Threads counted in cores: full value up to the core count, a yield beyond it."""
+        n = min(threads, self.cores * self.smt)
+        if n <= self.cores:
+            return float(n)
+        return max(1.0, self.cores + smt_yield * (n - self.cores))
 
     def bandwidth(self, threads: int) -> float:
         n = min(threads, self.cores)
