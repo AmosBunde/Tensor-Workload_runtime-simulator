@@ -226,6 +226,13 @@ def _cmd_whatif(args) -> int:
     return 0
 
 
+def _cmd_figures(args) -> int:
+    from .figures import draw_all
+
+    draw_all(Path(args.results), Path(args.out))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="tracesim",
@@ -294,6 +301,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--results", default=str(RESULTS))
     p.add_argument("--device", default=str(DEVICE))
     p.set_defaults(func=_cmd_summarise)
+
+    p = sub.add_parser("figures", help="draw the figures")
+    p.add_argument("--results", default=str(RESULTS))
+    p.add_argument("--out", default="docs/img")
+    p.set_defaults(func=_cmd_figures)
     return parser
 
 
