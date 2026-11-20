@@ -1,0 +1,92 @@
+{
+  "points": 966,
+  "points_measured_while_busy": 63,
+  "fit": {
+    "gemm": {
+      "points": 126,
+      "mape": 0.16333902288401597,
+      "median_ape": 0.12723412233064146
+    },
+    "bmm": {
+      "points": 72,
+      "mape": 0.1947442328252365,
+      "median_ape": 0.12841579782792334
+    },
+    "conv_k1": {
+      "points": 72,
+      "mape": 0.33594143675613825,
+      "median_ape": 0.23811685973150853
+    },
+    "conv_thin": {
+      "points": 96,
+      "mape": 0.2826589191757714,
+      "median_ape": 0.2210104635419845
+    },
+    "conv_s1": {
+      "points": 102,
+      "mape": 0.2590346228632538,
+      "median_ape": 0.2163454518119775
+    },
+    "conv_s2": {
+      "points": 72,
+      "mape": 0.3241868571669484,
+      "median_ape": 0.1829554876863616
+    },
+    "ew_cheap": {
+      "points": 72,
+      "mape": 0.19294218526917387,
+      "median_ape": 0.10361721954350589
+    },
+    "ew_transcend": {
+      "points": 36,
+      "mape": 0.17661715910448986,
+      "median_ape": 0.11205022229358769
+    },
+    "layernorm": {
+      "points": 60,
+      "mape": 0.22500358415240093,
+      "median_ape": 0.14979060600646488
+    },
+    "batchnorm_eval": {
+      "points": 36,
+      "mape": 0.22887315929730606,
+      "median_ape": 0.18304989321160264
+    },
+    "batchnorm_train": {
+      "points": 36,
+      "mape": 0.14621223648723938,
+      "median_ape": 0.14149420607569474
+    },
+    "softmax": {
+      "points": 30,
+      "mape": 0.1268198986097371,
+      "median_ape": 0.09709185570045131
+    },
+    "pool": {
+      "points": 36,
+      "mape": 0.15159607096415437,
+      "median_ape": 0.1470195561925669
+    },
+    "embedding": {
+      "points": 30,
+      "mape": 0.2216578534206717,
+      "median_ape": 0.22271007532518428
+    },
+    "reduce": {
+      "points": 30,
+      "mape": 0.19694753649371843,
+      "median_ape": 0.12833144489012427
+    },
+    "copy": {
+      "points": 30,
+      "mape": 0.18733126634710143,
+      "median_ape": 0.12550617859259144
+    },
+    "free": {
+      "points": 6,
+      "mape": 0.009111349150475697,
+      "median_ape": 0.00981395725130324
+    }
+  },
+  "measurement_minutes": 4.178566666666667
+}
