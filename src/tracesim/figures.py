@@ -219,30 +219,38 @@ def fig_whatif(whatif: dict, out_dir: Path) -> Path:
     return _save(fig, out_dir, "whatif.png")
 
 
-def fig_drift(full: dict, out_dir: Path) -> Path:
-    table = full["drift"]
-    cutoff = full["clean"]["cutoff_minutes"]
-    x = [0.5 * (b["from_minute"] + b["to_minute"]) for b in table]
-    y = [b["median_ratio"] for b in table]
-    fig, ax = plt.subplots(figsize=(7.4, 4.0))
-    ax.axvspan(0, cutoff, color=BLUE, alpha=0.12, label="First-pass window kept")
-    ax.plot(x, y, marker="o", color=RED, linewidth=2,
-            label="Median of first-pass time over second-pass time")
-    ax.axhline(1.0, color=GREY, linewidth=1, label="No change")
-    ax.set_xlim(0, max(b["to_minute"] for b in table))
-    ax.set_ylim(0.5, max(y) * 1.25)
-    ax.set_xlabel("Minutes into the first measurement pass")
-    ax.set_ylabel("Slowdown relative to the second pass")
-    ax.set_title("The machine slowed down part-way through the first pass")
-    ax.legend(loc="upper left", fontsize=9)
+def fig_drift(full: dict, results: Path, out_dir: Path) -> Path:
+    """Reference probe timings through the run, each relative to its own median."""
+    from .reference import load_reference
+
+    rows = load_reference(results / "reference.jsonl")
+    start = min(r["at"] for r in rows)
+    series = (("gemm-1-thread", "Matrix product, 1 thread", BLUE),
+              ("gemm-4-threads", "Matrix product, 4 threads", RED),
+              ("add-1-thread", "Large addition, 1 thread", GREY))
+    fig, ax = plt.subplots(figsize=(7.6, 4.0))
+    top, bottom = 1.1, 0.9
+    for key, label, colour in series:
+        sub = [r for r in rows if r["probe"] == key]
+        med = float(np.median([r["t"] for r in sub]))
+        y = [r["t"] / med for r in sub]
+        ax.plot([(r["at"] - start) / 60 for r in sub], y, marker="o", markersize=3.5,
+                color=colour, linewidth=1.5, label=label)
+        top, bottom = max(top, max(y)), min(bottom, min(y))
+    ax.axhline(1.0, color=INK, linewidth=0.8)
+    ax.set_ylim(max(0.0, bottom - 0.1), top + 0.25 * (top - bottom) + 0.05)
+    ax.set_xlabel("Minutes since the start of the microbenchmarks")
+    ax.set_ylabel("Probe time relative to its median")
+    ax.set_title("Machine speed through the run, from a fixed reference benchmark")
+    ax.legend(loc="upper left", ncols=3, fontsize=8.5)
     return _save(fig, out_dir, "drift.png")
 
 
 def draw_all(results: Path, out_dir: Path, log=print) -> list[Path]:
     _style()
     full = json.loads((results / "summary.json").read_text())
-    summary = full["clean"]
-    predictions = load_predictions(results / "predictions_clean.csv")
+    summary = full["planned"]
+    predictions = load_predictions(results / "predictions.csv")
     whatif = json.loads((results / "whatif.json").read_text())
     paths = [
         fig_headline(summary, out_dir),
@@ -251,8 +259,9 @@ def draw_all(results: Path, out_dir: Path, log=print) -> list[Path]:
         fig_extrapolation(summary, out_dir),
         fig_breakdown(whatif, out_dir),
         fig_whatif(whatif, out_dir),
-        fig_drift(full, out_dir),
     ]
+    if (results / "reference.jsonl").exists():
+        paths.append(fig_drift(full, results, out_dir))
     for p in paths:
         log(f"wrote {p}")
     return paths
