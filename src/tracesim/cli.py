@@ -63,6 +63,45 @@ def _cmd_predict(args) -> int:
     return 0
 
 
+def _cmd_microbench(args) -> int:
+    from .microbench import run_all
+
+    points = run_all(Path(args.out))
+    print(f"{len(points)} microbenchmark points in {args.out}")
+    return 0
+
+
+def _cmd_calibrate(args) -> int:
+    from .calibrate import fit_descriptor, fit_report, host_info
+    from .microbench import load_points
+    from .quiet import pin_to_cores
+
+    points = load_points(Path(args.points))
+    if not points:
+        print(f"no microbenchmark points in {args.points}; run `tracesim microbench` first")
+        return 1
+    # Describe the cores the microbenchmarks ran on, not the whole machine.
+    pin_to_cores()
+    device = fit_descriptor(points, args.name, host_info())
+    device.save(Path(args.device))
+    report = fit_report(points, device)
+    busy = sum(p.get("other_cpus", 0) > 0.4 for p in points)
+    doc = {"points": len(points), "points_measured_while_busy": busy, "fit": report,
+           "measurement_minutes": sum(p.get("wall", 0) for p in points) / 60}
+    (RESULTS / "calibration.json").parent.mkdir(parents=True, exist_ok=True)
+    (RESULTS / "calibration.json").write_text(json.dumps(doc, indent=2) + "\n")
+    print(f"{device.name}: {device.cores} cores x {device.smt} threads, "
+          f"{device.mem_bandwidth_bytes_per_s / 1e9:.1f} GB/s memory bandwidth")
+    print(f"{'class':16s} {'points':>6s} {'fit MAPE':>9s}  rate (float32)   overhead")
+    for cls, r in report.items():
+        m = device.op_classes[cls]
+        rate = m.rate.get("float32", 0.0)
+        print(f"{cls:16s} {r['points']:6d} {100 * r['mape']:8.1f}%  {rate:12.3g}/s "
+              f"{m.call_overhead_s * 1e6:7.1f} us")
+    print(f"wrote {args.device} and {RESULTS / 'calibration.json'}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="tracesim",
@@ -92,6 +131,16 @@ def build_parser() -> argparse.ArgumentParser:
                    help="operators allowed to run at once (not validated above 1)")
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=_cmd_predict)
+
+    p = sub.add_parser("microbench", help="time single operators on this machine")
+    p.add_argument("--out", default=str(RESULTS / "microbench.jsonl"))
+    p.set_defaults(func=_cmd_microbench)
+
+    p = sub.add_parser("calibrate", help="fit a device descriptor to the microbenchmarks")
+    p.add_argument("--points", default=str(RESULTS / "microbench.jsonl"))
+    p.add_argument("--device", default=str(DEVICE))
+    p.add_argument("--name", default="host")
+    p.set_defaults(func=_cmd_calibrate)
     return parser
 
 

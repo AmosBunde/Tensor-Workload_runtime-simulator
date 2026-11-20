@@ -69,12 +69,12 @@ def forward_cost(op: Op, model: OpClassModel, device: DeviceDescriptor, threads:
         return OpCost(total=overhead, overhead=overhead)
     rate = model.rate.get(op.dtype) or next(iter(model.rate.values()))
     serial = op.work / rate + op.items * model.item_overhead_s
-    n = min(threads, device.cores)
+    n = device.effective_threads(threads, model.smt_yield)
     body, ideal, parallel = serial, serial, False
-    if n > 1:
+    if threads > 1 and n != 1.0:
         par = serial * amdahl(n, model.serial_fraction) + model.fork_overhead_s
-        if par < serial:
-            body, ideal, parallel = par, serial / n, True
+        if par < serial or n < 1.0:
+            body, ideal, parallel = par, serial / min(threads, device.cores), True
     ws = op.working_set
     miss = max(0.0, 1.0 - device.cache_bytes / ws) if ws > 0 else 0.0
     mem = miss * ws / device.bandwidth(threads)
