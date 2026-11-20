@@ -159,3 +159,25 @@ def test_guard_keeps_the_attempt_with_the_least_interference(monkeypatch):
     assert run_quiet(lambda: "x", limit=0.4)[1:] == (0.1, 1)
     assert other_cpus(Snapshot.take()) >= 0.0
     assert math.isfinite(other_cpus(Snapshot.take()))
+
+
+def _row(session, cell, minute, t):
+    return {"session": session, "workload": cell, "mode": "forward", "dtype": "float32",
+            "threads": 1, "t": t, "at": 1000.0 + 60.0 * minute}
+
+
+def test_clean_view_keeps_the_early_window_and_prefers_the_second_pass():
+    from tracesim.measure import clean_pairs, clean_view, drift_table
+
+    rows = [_row("main", "early", 1, 1.0), _row("main", "early-both", 2, 1.0),
+            _row("main", "late", 20, 3.0), _row("main", "late-both", 21, 3.0),
+            _row("repeat", "early-both", 50, 1.1), _row("repeat", "late-both", 51, 1.0)]
+    view = {r["workload"]: r for r in clean_view(rows, cutoff_minutes=10)}
+    assert set(view) == {"early", "early-both", "late-both"}
+    assert view["early-both"]["t"] == 1.1 and view["late-both"]["t"] == 1.0
+    assert all(r["session"] == "main" for r in view.values())
+    pairs = clean_pairs(rows, cutoff_minutes=10)
+    assert [(a["t"], b["t"]) for a, b in pairs] == [(1.0, 1.1)]
+    table = drift_table(rows, bin_minutes=3.0)
+    assert [(b["from_minute"], b["pairs"]) for b in table] == [(0.0, 1), (21.0, 1)]
+    assert table[1]["median_ratio"] == pytest.approx(3.0)

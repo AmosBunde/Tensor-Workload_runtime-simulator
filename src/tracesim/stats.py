@@ -1,5 +1,8 @@
 """Statistics for the validation study. Everything quoted in the documents comes from here.
 
+The same statistics are computed twice: on all cells as planned, and on the cells measured
+while the machine ran at full speed (see ``measure.clean_view``).
+
 Intervals are 95% percentile bootstrap intervals that resample workloads, not cells: the
 twelve cells of one workload share a model and are not independent observations.
 """
@@ -197,7 +200,36 @@ def hypotheses(s: dict) -> dict:
     return out
 
 
-def summarise(predictions: Path, measurements: list[dict]) -> dict:
+def clean_noise(pairs: list[tuple[dict, dict]], cells: int) -> dict:
+    """Noise floor of the clean-window analysis, from cells measured in both windows."""
+    d = np.array([abs(a["t"] / b["t"] - 1.0) for a, b in pairs])
+    return {"cells": cells, "repeat_cells": int(len(d)), "repeat_mape": float(d.mean()),
+            "repeat_median_ape": float(np.median(d)),
+            "repeat_p90_ape": float(np.percentile(d, 90))}
+
+
+def rescaled_simulator(predictions: Path, factor: float) -> dict:
+    """Exploratory: the simulator with every prediction divided by one constant.
+
+    The constant is how much slower operators ran during calibration than in a later
+    recheck. It comes from operator timings alone, not from any measured workload.
+    """
+    rows = load_predictions(predictions)
+    for r in rows:
+        r["sim_rescaled"] = r["sim"] / factor
+    out = {}
+    for design in DESIGNS:
+        sub = [r for r in rows if r["design"] == design]
+        stats_ = method_stats(sub, "sim_rescaled")
+        out[design] = {"mape": stats_["mape"], "mape_ci": stats_["mape_ci"],
+                       "median_ape": stats_["median_ape"],
+                       "geometric_mean_ratio": stats_["geometric_mean_ratio"],
+                       "minus_gbm": paired_difference(sub, "sim_rescaled", "gbm"),
+                       "minus_loglinear": paired_difference(sub, "sim_rescaled", "loglinear")}
+    return out
+
+
+def summarise(predictions: Path) -> dict:
     rows = load_predictions(predictions)
     s: dict = {"designs": {}, "decision": {}}
     for design in DESIGNS:
@@ -238,7 +270,6 @@ def summarise(predictions: Path, measurements: list[dict]) -> dict:
     s["size_by_extrapolation"] = bins
     s["size_extrapolation_range"] = [min(r["extrapolation"] for r in size),
                                      max(r["extrapolation"] for r in size)]
-    s["noise"] = noise_floor(measurements)
     s["hypotheses"] = hypotheses(s)
     return s
 

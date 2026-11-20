@@ -17,7 +17,6 @@ from pathlib import Path
 from .baselines import FlopsProportional, GradientBoosting, LogLinear, SimulatorCorrections
 from .calibrate import fit_descriptor
 from .device import DeviceDescriptor
-from .measure import load_measurements
 from .microbench import load_points
 from .simulator import class_times
 from .trace import Trace, cached_trace
@@ -29,12 +28,11 @@ COLUMNS = ["design", "fold", "workload", "family", "mode", "dtype", "threads", "
            "extrapolation", "measured", "sim_full"] + list(METHODS)
 
 
-def load_cells(measurements: Path, cache_dir: Path | None, log=print) -> list[dict]:
-    """Measured cells joined with their traces and trace features."""
+def load_cells(rows: list[dict], cache_dir: Path | None, log=print) -> list[dict]:
+    """Measured cells (one row each) joined with their traces and trace features."""
     workloads = {w.id: w for w in grid()}
     traces: dict[tuple, Trace] = {}
     cells = []
-    rows = load_measurements(measurements, "main")
     for r in rows:
         key = (r["workload"], r["mode"], r["dtype"])
         if key not in traces:
@@ -43,9 +41,13 @@ def load_cells(measurements: Path, cache_dir: Path | None, log=print) -> list[di
             if len(traces) % 100 == 0:
                 log(f"  {len(traces)} traces captured")
         cells.append({**r, "trace": traces[key], "features": traces[key].features()})
-    fwd = {(w, d): t.flops for (w, m, d), t in traces.items() if m == "forward"}
+    sizes: dict[str, float] = {}
     for c in cells:
-        c["size"] = fwd.get((c["workload"], "float32"), c["features"]["flops"])
+        # Size is the forward-pass FLOP count, whichever cells happen to be present.
+        if c["workload"] not in sizes:
+            sizes[c["workload"]] = cached_trace(workloads[c["workload"]], "forward",
+                                                "float32", cache_dir).flops
+        c["size"] = sizes[c["workload"]]
     return cells
 
 
@@ -136,11 +138,12 @@ def run_design(design: str, cells: list[dict], points: list[dict], full: DeviceD
     return rows
 
 
-def run(measurements: Path, microbench: Path, out: Path, device_path: Path,
+def run(measurements: list[dict], microbench: Path, out: Path, device_path: Path,
         cache_dir: Path | None, log=print) -> list[dict]:
+    """Run every design on ``measurements`` (one row per cell) and write the predictions."""
     points = load_points(microbench)
     full = DeviceDescriptor.load(device_path)
-    log("loading cells and capturing traces")
+    log(f"loading {len(measurements)} cells and their traces")
     cells = load_cells(measurements, cache_dir, log)
     rows: list[dict] = []
     for design in DESIGNS:
