@@ -242,7 +242,7 @@ def fig_drift(full: dict, results: Path, out_dir: Path) -> Path:
     ax.set_xlabel("Minutes since the start of the microbenchmarks")
     ax.set_ylabel("Probe time relative to its median")
     ax.set_title("Machine speed through the run, from a fixed reference benchmark")
-    ax.legend(loc="upper left", ncols=3, fontsize=8.5)
+    ax.legend(loc="upper left", fontsize=8.5)
     return _save(fig, out_dir, "drift.png")
 
 
