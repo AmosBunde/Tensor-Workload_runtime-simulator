@@ -178,6 +178,7 @@ def test_clean_view_keeps_the_early_window_and_prefers_the_second_pass():
     assert all(r["session"] == "main" for r in view.values())
     pairs = clean_pairs(rows, cutoff_minutes=10)
     assert [(a["t"], b["t"]) for a, b in pairs] == [(1.0, 1.1)]
+    # Minutes are counted from the first measurement, which was taken at minute 1.
     table = drift_table(rows, bin_minutes=3.0)
-    assert [(b["from_minute"], b["pairs"]) for b in table] == [(0.0, 1), (21.0, 1)]
+    assert [(b["from_minute"], b["pairs"]) for b in table] == [(0.0, 1), (18.0, 1)]
     assert table[1]["median_ratio"] == pytest.approx(3.0)
