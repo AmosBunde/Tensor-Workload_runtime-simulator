@@ -19,6 +19,7 @@ from pathlib import Path
 import torch
 
 from .quiet import pin_to_cores, run_quiet
+from .reference import ReferenceLog
 from .timing import Timing, time_callable
 from .zoo import TrainStep, Workload, grid
 
@@ -65,7 +66,8 @@ def load_measurements(path: Path, session: str | None = "main") -> list[dict]:
 
 
 def run(path: Path, repeat_fraction: float = 0.2, max_minutes: float | None = None,
-        only: list[str] | None = None, seed: int = 0, log=print) -> None:
+        only: list[str] | None = None, seed: int = 0, log=print,
+        reference: Path | None = None) -> None:
     """Measure every cell once, then a random subset a second time."""
     path.parent.mkdir(parents=True, exist_ok=True)
     workloads = {w.id: w for w in grid()}
@@ -81,8 +83,11 @@ def run(path: Path, repeat_fraction: float = 0.2, max_minutes: float | None = No
     log(f"{len(todo)} cells to measure, {len(plan) - len(todo)} already done")
     log(f"pinned to CPUs {pin_to_cores()}")
     start = time.time()
+    ref = ReferenceLog(reference, "measure") if reference and todo else None
     with path.open("a") as f:
         for i, (session, (wid, mode, dtype, threads)) in enumerate(todo):
+            if ref:
+                ref.maybe_record()
             if max_minutes is not None and time.time() - start > max_minutes * 60:
                 log(f"stopping at the time limit with {len(todo) - i} cells left")
                 break
@@ -98,6 +103,8 @@ def run(path: Path, repeat_fraction: float = 0.2, max_minutes: float | None = No
             f.flush()
             if (i + 1) % 100 == 0:
                 log(f"  {i + 1}/{len(todo)} cells, {(time.time() - start) / 60:.1f} min")
+    if ref:
+        ref.record()
     log(f"finished in {(time.time() - start) / 60:.1f} min")
 
 

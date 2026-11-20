@@ -52,6 +52,19 @@ def pin_to_cores(n_cores: int = 2) -> list[int]:
     return cpus
 
 
+def cpu_mhz() -> float | None:
+    """Mean current clock frequency of the CPUs this process may run on, if readable."""
+    cpus = os.sched_getaffinity(0) if hasattr(os, "sched_getaffinity") else []
+    vals = []
+    for c in cpus:
+        try:
+            text = Path(f"/sys/devices/system/cpu/cpu{c}/cpufreq/scaling_cur_freq").read_text()
+            vals.append(int(text) / 1000.0)
+        except (OSError, ValueError):
+            pass
+    return sum(vals) / len(vals) if vals else None
+
+
 def _machine_busy_seconds() -> float | None:
     """CPU seconds spent so far, by anyone, on the CPUs this process may run on."""
     mine = os.sched_getaffinity(0) if hasattr(os, "sched_getaffinity") else None

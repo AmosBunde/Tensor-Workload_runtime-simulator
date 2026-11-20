@@ -182,3 +182,16 @@ def test_clean_view_keeps_the_early_window_and_prefers_the_second_pass():
     table = drift_table(rows, bin_minutes=3.0)
     assert [(b["from_minute"], b["pairs"]) for b in table] == [(0.0, 1), (18.0, 1)]
     assert table[1]["median_ratio"] == pytest.approx(3.0)
+
+
+def test_reference_summary_reports_the_spread_of_each_probe():
+    from tracesim.reference import summarise_reference
+
+    rows = [{"at": 60.0 * i, "phase": "measure", "probe": "gemm-1-thread", "t": t,
+             "mhz": 3000.0 + i} for i, t in enumerate((1.0, 1.0, 1.0, 1.5, 0.9))]
+    s = summarise_reference(rows)
+    probe = s["probes"]["gemm-1-thread"]
+    assert probe["readings"] == 5 and probe["median_s"] == 1.0
+    assert probe["slowest_over_fastest"] == pytest.approx(1.5 / 0.9)
+    assert probe["largest_deviation_from_median"] == pytest.approx(0.5)
+    assert s["cpu_mhz"]["lowest"] == 3000.0 and s["span_minutes"] == pytest.approx(4.0)

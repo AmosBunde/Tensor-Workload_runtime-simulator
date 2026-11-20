@@ -69,7 +69,7 @@ def _cmd_microbench(args) -> int:
     if args.recheck:
         recheck(Path(args.out), RESULTS / "microbench_recheck.jsonl")
         return 0
-    points = run_all(Path(args.out))
+    points = run_all(Path(args.out), reference=RESULTS / "reference.jsonl")
     print(f"{len(points)} microbenchmark points in {args.out}")
     return 0
 
@@ -110,7 +110,7 @@ def _cmd_measure(args) -> int:
 
     only = args.only.split(",") if args.only else None
     run(Path(args.out), repeat_fraction=args.repeat_fraction, max_minutes=args.max_minutes,
-        only=only)
+        only=only, reference=RESULTS / "reference.jsonl")
     return 0
 
 
@@ -121,12 +121,12 @@ def _cmd_evaluate(args) -> int:
     rows = load_measurements(Path(args.measurements), None)
     cache = None if args.no_cache else TRACE_CACHE
     out = Path(args.out)
-    print("all cells, as planned")
     run([r for r in rows if r["session"] == "main"], Path(args.points), out,
         Path(args.device), cache)
-    print("cells measured while the machine ran at full speed")
-    run(clean_view(rows), Path(args.points), out.with_name(out.stem + "_clean.csv"),
-        Path(args.device), cache)
+    if args.clean_cutoff_minutes is not None:
+        print("cells measured while the machine ran at full speed")
+        run(clean_view(rows, args.clean_cutoff_minutes), Path(args.points),
+            out.with_name(out.stem + "_clean.csv"), Path(args.device), cache)
     return 0
 
 
@@ -134,6 +134,7 @@ def _cmd_summarise(args) -> int:
     from .device import DeviceDescriptor
     from .measure import (CLEAN_CUTOFF_MINUTES, clean_pairs, clean_view, drift_table,
                           load_measurements)
+    from .reference import by_window, load_reference, summarise_reference
     from .stats import (clean_noise, noise_floor, rescaled_simulator, summarise,
                         write_summary)
 
@@ -141,14 +142,28 @@ def _cmd_summarise(args) -> int:
     measurements = load_measurements(results / "measurements.jsonl", None)
     planned = summarise(results / "predictions.csv")
     planned["noise"] = noise_floor(measurements)
-    clean = summarise(results / "predictions_clean.csv")
-    view = clean_view(measurements)
-    clean["noise"] = clean_noise(clean_pairs(measurements), len(view))
-    clean["cutoff_minutes"] = CLEAN_CUTOFF_MINUTES
-    clean["workloads"] = len({r["workload"] for r in view})
-    clean["cells_by_threads"] = {str(n): sum(r["threads"] == n for r in view)
-                                 for n in (1, 2, 4)}
-    summary = {"planned": planned, "clean": clean, "drift": drift_table(measurements)}
+    summary = {"planned": planned, "drift": drift_table(measurements)}
+    clean = None
+    if (results / "predictions_clean.csv").exists():
+        # Only the first run has this: an analysis of the cells measured at full speed.
+        clean = summarise(results / "predictions_clean.csv")
+        view = clean_view(measurements)
+        clean["noise"] = clean_noise(clean_pairs(measurements), len(view))
+        clean["cutoff_minutes"] = CLEAN_CUTOFF_MINUTES
+        clean["workloads"] = len({r["workload"] for r in view})
+        clean["cells_by_threads"] = {str(n): sum(r["threads"] == n for r in view)
+                                     for n in (1, 2, 4)}
+        summary["clean"] = clean
+    reference = load_reference(results / "reference.jsonl")
+    if reference:
+        summary["reference"] = summarise_reference(reference)
+        first = [m["at"] for m in measurements if m["session"] == "main"]
+        second = [m["at"] for m in measurements if m["session"] == "repeat"]
+        windows = {"microbenchmarks": (0.0, min(first) - 1.0),
+                   "first_pass": (min(first) - 1.0, max(first))}
+        if second:
+            windows["second_pass"] = (max(first), max(second) + 600.0)
+        summary["reference"]["by_window"] = by_window(reference, windows)
     device = DeviceDescriptor.load(Path(args.device))
     summary["device"] = {
         "name": device.name, "cpu": device.notes, "cores": device.cores, "smt": device.smt,
@@ -175,8 +190,9 @@ def _cmd_summarise(args) -> int:
             "share_slower_at_calibration": sum(r > 1.0 for r in ratios) / len(ratios),
         }
         factor = ratios[len(ratios) // 2]
-        clean["exploratory_rescaled_simulator"] = rescaled_simulator(
-            results / "predictions_clean.csv", factor)
+        if clean is not None:
+            clean["exploratory_rescaled_simulator"] = rescaled_simulator(
+                results / "predictions_clean.csv", factor)
         planned["exploratory_rescaled_simulator"] = rescaled_simulator(
             results / "predictions.csv", factor)
     for name in ("calibration", "whatif"):
@@ -192,7 +208,10 @@ def _cmd_summarise(args) -> int:
     write_summary(summary, results / "summary.json")
     print(f"wrote {results / 'summary.json'}")
     methods = ("sim", "simfit", "flops", "gbm", "loglinear")
-    for label, block in (("all cells, as planned", planned), ("clean windows", clean)):
+    blocks = [("all cells, as planned", planned)]
+    if clean is not None:
+        blocks.append(("clean windows", clean))
+    for label, block in blocks:
         print(f"{label}: noise floor {100 * block['noise']['repeat_mape']:.1f}%")
         print(f"  {'design':10s} " + " ".join(f"{m:>10s}" for m in methods))
         for design, d in block["designs"].items():
@@ -205,12 +224,12 @@ def _cmd_summarise(args) -> int:
 
 def _cmd_whatif(args) -> int:
     from .device import DeviceDescriptor
-    from .measure import clean_view, load_measurements
+    from .measure import load_measurements
     from .whatif import NOTE, breakdowns, project
 
     host = DeviceDescriptor.load(Path(args.device))
     measured = {(m["workload"], m["mode"], m["dtype"], m["threads"]): m["t"]
-                for m in clean_view(load_measurements(Path(args.measurements), None))}
+                for m in load_measurements(Path(args.measurements), "main")}
     ids = ["mlp-w64-d2-b1", "mlp-w2048-d6-b512", "cnn-w16-b1-i32-b1", "cnn-w64-b2-i64-b4",
            "transformer-d64-d2-s32-b1", "transformer-d512-d4-s128-b8",
            "mixer-d64-d2-i32-b1", "mixer-d512-d4-i64-b8"]
@@ -289,6 +308,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--device", default=str(DEVICE))
     p.add_argument("--out", default=str(RESULTS / "predictions.csv"))
     p.add_argument("--no-cache", action="store_true", help="do not cache traces on disk")
+    p.add_argument("--clean-cutoff-minutes", type=float, default=None,
+                   help="also analyse only the cells measured before this minute of the "
+                        "first pass or in the second pass (used for the first run: 10)")
     p.set_defaults(func=_cmd_evaluate)
 
     p = sub.add_parser("whatif", help="project runtimes on devices that were not measured")

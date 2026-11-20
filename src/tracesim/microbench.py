@@ -18,6 +18,7 @@ import torch
 from torch import nn
 
 from .quiet import pin_to_cores, run_quiet
+from .reference import ReferenceLog
 from .timing import time_callable
 from .trace import Op, capture
 
@@ -222,7 +223,7 @@ def load_points(path: Path) -> list[dict]:
     return [json.loads(line) for line in Path(path).read_text().splitlines() if line.strip()]
 
 
-def run_all(path: Path, log=print) -> list[dict]:
+def run_all(path: Path, log=print, reference: Path | None = None) -> list[dict]:
     """Run every case on every configuration. Cases already in ``path`` are skipped."""
     path.parent.mkdir(parents=True, exist_ok=True)
     done = {(p["id"], p["dtype"], p["threads"]) for p in load_points(path)}
@@ -231,13 +232,18 @@ def run_all(path: Path, log=print) -> list[dict]:
     log(f"{len(todo)} microbenchmarks to run, {len(done)} already done")
     log(f"pinned to CPUs {pin_to_cores()}")
     torch.set_flush_denormal(True)
+    ref = ReferenceLog(reference, "microbench") if reference and todo else None
     with path.open("a") as f:
         for i, (case, dtype, threads) in enumerate(todo):
+            if ref:
+                ref.maybe_record()
             rec = run_case(case, dtype, threads)
             f.write(json.dumps(rec) + "\n")
             f.flush()
             if (i + 1) % 100 == 0:
                 log(f"  {i + 1}/{len(todo)}")
+    if ref:
+        ref.record()
     return load_points(path)
 
 
