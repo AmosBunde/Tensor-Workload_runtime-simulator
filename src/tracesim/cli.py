@@ -102,6 +102,69 @@ def _cmd_calibrate(args) -> int:
     return 0
 
 
+def _cmd_measure(args) -> int:
+    from .measure import run
+
+    only = args.only.split(",") if args.only else None
+    run(Path(args.out), repeat_fraction=args.repeat_fraction, max_minutes=args.max_minutes,
+        only=only)
+    return 0
+
+
+def _cmd_evaluate(args) -> int:
+    from .evaluate import run
+
+    run(Path(args.measurements), Path(args.points), Path(args.out), Path(args.device),
+        None if args.no_cache else TRACE_CACHE)
+    return 0
+
+
+def _cmd_summarise(args) -> int:
+    from .device import DeviceDescriptor
+    from .measure import load_measurements
+    from .stats import summarise, write_summary
+
+    results = Path(args.results)
+    measurements = load_measurements(results / "measurements.jsonl", None)
+    summary = summarise(results / "predictions.csv", measurements)
+    device = DeviceDescriptor.load(Path(args.device))
+    summary["device"] = {
+        "name": device.name, "cpu": device.notes, "cores": device.cores, "smt": device.smt,
+        "cache_bytes": device.cache_bytes,
+        "mem_bandwidth_gb_per_s": device.mem_bandwidth_bytes_per_s / 1e9,
+        "mem_serial_fraction": device.mem_serial_fraction,
+        "first_touch_gb_per_s": device.first_touch_bytes_per_s / 1e9,
+        "op_classes": {k: {"rate_float32": v.rate.get("float32"),
+                           "rate_float64": v.rate.get("float64"),
+                           "call_overhead_us": v.call_overhead_s * 1e6,
+                           "serial_fraction": v.serial_fraction,
+                           "smt_yield": v.smt_yield,
+                           "backward_ratio": v.backward_ratio}
+                       for k, v in device.op_classes.items()},
+    }
+    for name in ("calibration", "whatif"):
+        path = results / f"{name}.json"
+        if path.exists():
+            summary[name] = json.loads(path.read_text())
+    summary["study"] = {
+        "workloads": len({m["workload"] for m in measurements}),
+        "families": len({m["family"] for m in measurements}),
+        "cells": sum(m["session"] == "main" for m in measurements),
+        "device_configurations": len({(m["threads"], m["dtype"]) for m in measurements}),
+    }
+    write_summary(summary, results / "summary.json")
+    print(f"wrote {results / 'summary.json'}")
+    print(f"{'design':10s} " + " ".join(f"{m:>10s}" for m in
+                                          ("sim", "simfit", "flops", "gbm", "loglinear")))
+    for design, d in summary["designs"].items():
+        print(f"{design:10s} " + " ".join(
+            f"{100 * d['methods'][m]['mape']:9.1f}%" for m in
+            ("sim", "simfit", "flops", "gbm", "loglinear")))
+    for name, h in summary["hypotheses"].items():
+        print(f"{name}: {'supported' if h['supported'] else 'not supported'}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="tracesim",
@@ -141,6 +204,27 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--device", default=str(DEVICE))
     p.add_argument("--name", default="host")
     p.set_defaults(func=_cmd_calibrate)
+
+    p = sub.add_parser("measure", help="time the workload grid on this machine (resumable)")
+    p.add_argument("--out", default=str(RESULTS / "measurements.jsonl"))
+    p.add_argument("--repeat-fraction", type=float, default=0.2,
+                   help="share of cells measured a second time to estimate noise")
+    p.add_argument("--max-minutes", type=float, default=None)
+    p.add_argument("--only", help="comma-separated workload ids, for a quick check")
+    p.set_defaults(func=_cmd_measure)
+
+    p = sub.add_parser("evaluate", help="run the four test designs and write predictions")
+    p.add_argument("--measurements", default=str(RESULTS / "measurements.jsonl"))
+    p.add_argument("--points", default=str(RESULTS / "microbench.jsonl"))
+    p.add_argument("--device", default=str(DEVICE))
+    p.add_argument("--out", default=str(RESULTS / "predictions.csv"))
+    p.add_argument("--no-cache", action="store_true", help="do not cache traces on disk")
+    p.set_defaults(func=_cmd_evaluate)
+
+    p = sub.add_parser("summarise", help="compute every statistic quoted in the documents")
+    p.add_argument("--results", default=str(RESULTS))
+    p.add_argument("--device", default=str(DEVICE))
+    p.set_defaults(func=_cmd_summarise)
     return parser
 
 
