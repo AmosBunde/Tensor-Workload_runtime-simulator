@@ -99,3 +99,62 @@ def run(path: Path, repeat_fraction: float = 0.2, max_minutes: float | None = No
             if (i + 1) % 100 == 0:
                 log(f"  {i + 1}/{len(todo)} cells, {(time.time() - start) / 60:.1f} min")
     log(f"finished in {(time.time() - start) / 60:.1f} min")
+
+
+CLEAN_CUTOFF_MINUTES = 10.0
+
+
+def _key(r: dict) -> tuple:
+    return (r["workload"], r["mode"], r["dtype"], r["threads"])
+
+
+def drift_table(rows: list[dict], bin_minutes: float = 3.0) -> list[dict]:
+    """How much slower the first pass was than the second, by time into the first pass.
+
+    Every cell of the second pass was also measured in the first. The ratio of the two
+    times, grouped by when the first measurement was taken, shows when the machine as a
+    whole was running slow.
+    """
+    main = {_key(r): r for r in rows if r["session"] == "main"}
+    start = min(r["at"] for r in rows)
+    bins: dict[int, list[float]] = {}
+    for r in rows:
+        if r["session"] == "repeat" and _key(r) in main:
+            m = main[_key(r)]
+            minute = (m["at"] - start) / 60.0
+            bins.setdefault(int(minute // bin_minutes), []).append(m["t"] / r["t"])
+    out = []
+    for b in sorted(bins):
+        v = sorted(bins[b])
+        out.append({"from_minute": b * bin_minutes, "to_minute": (b + 1) * bin_minutes,
+                    "pairs": len(v), "median_ratio": v[len(v) // 2] if len(v) % 2 else
+                    0.5 * (v[len(v) // 2 - 1] + v[len(v) // 2])})
+    return out
+
+
+def clean_view(rows: list[dict], cutoff_minutes: float = CLEAN_CUTOFF_MINUTES) -> list[dict]:
+    """One row per cell, using only the two windows in which the machine ran at full speed.
+
+    Those are the first ``cutoff_minutes`` of the first pass and the whole second pass.
+    A cell measured in both takes its second-pass time. Cells measured only in the slow
+    stretch of the first pass are left out. Rows are relabelled as session "main" so the
+    rest of the pipeline can treat them like any other set of measurements.
+    """
+    start = min(r["at"] for r in rows)
+    chosen: dict[tuple, dict] = {}
+    for r in rows:
+        if r["session"] == "main" and (r["at"] - start) / 60.0 < cutoff_minutes:
+            chosen[_key(r)] = r
+    for r in rows:
+        if r["session"] == "repeat":
+            chosen[_key(r)] = r
+    return [{**r, "session": "main"} for r in chosen.values()]
+
+
+def clean_pairs(rows: list[dict], cutoff_minutes: float = CLEAN_CUTOFF_MINUTES
+                ) -> list[tuple[dict, dict]]:
+    """Cells measured in both clean windows: (first pass, second pass)."""
+    start = min(r["at"] for r in rows)
+    main = {_key(r): r for r in rows if r["session"] == "main"
+            and (r["at"] - start) / 60.0 < cutoff_minutes}
+    return [(main[_key(r)], r) for r in rows if r["session"] == "repeat" and _key(r) in main]
