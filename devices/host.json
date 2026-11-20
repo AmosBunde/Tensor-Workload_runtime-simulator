@@ -1,0 +1,273 @@
+{
+  "name": "host",
+  "cores": 2,
+  "cache_bytes": 8388608,
+  "mem_bandwidth_bytes_per_s": 12427705087.619793,
+  "mem_serial_fraction": 0.8156628555181082,
+  "op_classes": {
+    "gemm": {
+      "unit": "flops",
+      "rate": {
+        "float32": 34036851823.747433,
+        "float64": 17129317345.61328
+      },
+      "call_overhead_s": 1.3853292149281796e-05,
+      "item_overhead_s": 0.0,
+      "serial_fraction": 0.4655213001176367,
+      "fork_overhead_s": 1.646572797390875e-05,
+      "smt_yield": 0.9999999999850878,
+      "backward_overhead_ratio": 9.498194366506883,
+      "backward_ratio": 2.0695929422840726,
+      "backward_ratio_no_input_grad": 1.0643060161135616
+    },
+    "bmm": {
+      "unit": "flops",
+      "rate": {
+        "float32": 35788057723.71894,
+        "float64": 16072244630.053556
+      },
+      "call_overhead_s": 3.2467133723718214e-05,
+      "item_overhead_s": 5.033218315604945e-07,
+      "serial_fraction": 5.273506951448964e-13,
+      "fork_overhead_s": 0.00010462406885399655,
+      "smt_yield": 0.33404506634334213,
+      "backward_overhead_ratio": 8.903677162482722,
+      "backward_ratio": 2.313734532643847,
+      "backward_ratio_no_input_grad": null
+    },
+    "conv_k1": {
+      "unit": "flops",
+      "rate": {
+        "float32": 14387903017.45593,
+        "float64": 15813388596.575191
+      },
+      "call_overhead_s": 7.03779004778481e-05,
+      "item_overhead_s": 0.0,
+      "serial_fraction": 4.352001092386735e-11,
+      "fork_overhead_s": 0.000323291482887316,
+      "smt_yield": 0.3917247561842471,
+      "backward_overhead_ratio": 3.081538185347434,
+      "backward_ratio": 2.7149956313832297,
+      "backward_ratio_no_input_grad": 0.9647818364124604
+    },
+    "conv_thin": {
+      "unit": "flops",
+      "rate": {
+        "float32": 34708311823.358765,
+        "float64": 19870087557.317337
+      },
+      "call_overhead_s": 0.00010051993026399273,
+      "item_overhead_s": 0.0,
+      "serial_fraction": 2.099437294411968e-08,
+      "fork_overhead_s": 3.7761967237928872e-06,
+      "smt_yield": 0.04614632985401916,
+      "backward_overhead_ratio": 2.5131160475835745,
+      "backward_ratio": 2.5795110784116475,
+      "backward_ratio_no_input_grad": 0.9304709876629762
+    },
+    "conv_s1": {
+      "unit": "flops",
+      "rate": {
+        "float32": 27993828066.35008,
+        "float64": 12263096022.999966
+      },
+      "call_overhead_s": 0.00013835778114364361,
+      "item_overhead_s": 0.0,
+      "serial_fraction": 0.1872994633781269,
+      "fork_overhead_s": 0.0002189898130682895,
+      "smt_yield": 0.2719204885056428,
+      "backward_overhead_ratio": 2.6802564439648617,
+      "backward_ratio": 1.7741815530114209,
+      "backward_ratio_no_input_grad": 0.7211855774965371
+    },
+    "conv_s2": {
+      "unit": "flops",
+      "rate": {
+        "float32": 28021937124.45421,
+        "float64": 12457233766.754808
+      },
+      "call_overhead_s": 0.0001554654321252771,
+      "item_overhead_s": 0.0,
+      "serial_fraction": 1.0468715834521842e-09,
+      "fork_overhead_s": 0.0008564973579877586,
+      "smt_yield": 0.17408586599848444,
+      "backward_overhead_ratio": 2.65949945657492,
+      "backward_ratio": 2.128732020576151,
+      "backward_ratio_no_input_grad": 0.9114114395242715
+    },
+    "ew_cheap": {
+      "unit": "elements",
+      "rate": {
+        "float32": 2352587883.189776,
+        "float64": 1277891657.9954083
+      },
+      "call_overhead_s": 5.983076403243311e-06,
+      "item_overhead_s": 0.0,
+      "serial_fraction": 0.8874476045074313,
+      "fork_overhead_s": 1.9145571024165496e-16,
+      "smt_yield": 0.9999995356511637,
+      "backward_overhead_ratio": 11.008594058480176,
+      "backward_ratio": 0.22186421561264222,
+      "backward_ratio_no_input_grad": null
+    },
+    "ew_transcend": {
+      "unit": "elements",
+      "rate": {
+        "float32": 368814812.83817154,
+        "float64": 92323019.91495965
+      },
+      "call_overhead_s": 1.5733687671560083e-05,
+      "item_overhead_s": 0.0,
+      "serial_fraction": 0.3150540315502258,
+      "fork_overhead_s": 9.285770732700183e-07,
+      "smt_yield": 0.9999999656779727,
+      "backward_overhead_ratio": 5.307602670499184,
+      "backward_ratio": 1.2460153732131536,
+      "backward_ratio_no_input_grad": null
+    },
+    "layernorm": {
+      "unit": "elements",
+      "rate": {
+        "float32": 945546113.6666865,
+        "float64": 536983175.8117197
+      },
+      "call_overhead_s": 1.644560830418025e-05,
+      "item_overhead_s": 0.0,
+      "serial_fraction": 0.08475432076376714,
+      "fork_overhead_s": 1.0893309914049981e-25,
+      "smt_yield": 0.4390855412549424,
+      "backward_overhead_ratio": 6.056800260430876,
+      "backward_ratio": 1.2263144695105384,
+      "backward_ratio_no_input_grad": 0.49445216331655817
+    },
+    "batchnorm_eval": {
+      "unit": "elements",
+      "rate": {
+        "float32": 1772417122.0160987,
+        "float64": 946392159.1217399
+      },
+      "call_overhead_s": 3.0283262961687054e-05,
+      "item_overhead_s": 0.0,
+      "serial_fraction": 2.9783213644501273e-12,
+      "fork_overhead_s": 4.446172175915538e-22,
+      "smt_yield": 0.18153938185261742,
+      "backward_overhead_ratio": 3.110762513331364,
+      "backward_ratio": 1.5367269562050418,
+      "backward_ratio_no_input_grad": 0.9533189963952904
+    },
+    "batchnorm_train": {
+      "unit": "elements",
+      "rate": {
+        "float32": 249222146.321859,
+        "float64": 223677707.56789282
+      },
+      "call_overhead_s": 5.3996786449988584e-05,
+      "item_overhead_s": 0.0,
+      "serial_fraction": 0.11154567957817454,
+      "fork_overhead_s": 2.0993180876066438e-17,
+      "smt_yield": 0.988464126330629,
+      "backward_overhead_ratio": 1.9892800803149735,
+      "backward_ratio": 0.3875291581760151,
+      "backward_ratio_no_input_grad": 0.21815256622487111
+    },
+    "softmax": {
+      "unit": "elements",
+      "rate": {
+        "float32": 475027277.0463655,
+        "float64": 161415406.49338222
+      },
+      "call_overhead_s": 1.0620859427137693e-05,
+      "item_overhead_s": 0.0,
+      "serial_fraction": 2.096149889681051e-09,
+      "fork_overhead_s": 2.3032832098568493e-17,
+      "smt_yield": 0.548464626094914,
+      "backward_overhead_ratio": 6.325136660195129,
+      "backward_ratio": 0.3385843526136734,
+      "backward_ratio_no_input_grad": null
+    },
+    "pool": {
+      "unit": "elements",
+      "rate": {
+        "float32": 6544966330.154784,
+        "float64": 2798652225.6881843
+      },
+      "call_overhead_s": 1.9767617283024177e-05,
+      "item_overhead_s": 0.0,
+      "serial_fraction": 0.668313838152687,
+      "fork_overhead_s": 7.345622798807511e-17,
+      "smt_yield": 0.9999999999898319,
+      "backward_overhead_ratio": 5.184931818783187,
+      "backward_ratio": 2.7716391454631712,
+      "backward_ratio_no_input_grad": null
+    },
+    "embedding": {
+      "unit": "elements",
+      "rate": {
+        "float32": 3095136266.4902635,
+        "float64": 1246451837.9293995
+      },
+      "call_overhead_s": 1.5423356961533196e-05,
+      "item_overhead_s": 0.0,
+      "serial_fraction": 0.053958288846040724,
+      "fork_overhead_s": 6.217627061789962e-06,
+      "smt_yield": 0.16620720896507862,
+      "backward_overhead_ratio": 7.673539991057058,
+      "backward_ratio": 1.9641353098665109,
+      "backward_ratio_no_input_grad": 2.002122887592033
+    },
+    "reduce": {
+      "unit": "elements",
+      "rate": {
+        "float32": 4936260535.587214,
+        "float64": 2494377739.6528
+      },
+      "call_overhead_s": 1.766364493013863e-05,
+      "item_overhead_s": 0.0,
+      "serial_fraction": 7.804450638944007e-10,
+      "fork_overhead_s": 3.1588835590770774e-07,
+      "smt_yield": 0.004366994038552118,
+      "backward_overhead_ratio": 5.747373070204295,
+      "backward_ratio": 1.7937422742437286,
+      "backward_ratio_no_input_grad": null
+    },
+    "copy": {
+      "unit": "elements",
+      "rate": {
+        "float32": 2264384747.3381534,
+        "float64": 1042741907.9928412
+      },
+      "call_overhead_s": 1.8732203308763945e-05,
+      "item_overhead_s": 0.0,
+      "serial_fraction": 0.08030319907827053,
+      "fork_overhead_s": 3.7882450681105776e-06,
+      "smt_yield": 0.45092092262843136,
+      "backward_overhead_ratio": 4.492565058726673,
+      "backward_ratio": 0.17118869470110745,
+      "backward_ratio_no_input_grad": null
+    },
+    "free": {
+      "unit": "none",
+      "rate": {},
+      "call_overhead_s": 6.927982538014255e-06,
+      "item_overhead_s": 0.0,
+      "serial_fraction": 1.0,
+      "fork_overhead_s": 0.0,
+      "smt_yield": 0.0,
+      "backward_overhead_ratio": 9.307558528129327,
+      "backward_ratio": 0.0,
+      "backward_ratio_no_input_grad": null
+    }
+  },
+  "fresh_alloc_threshold_bytes": 33554432,
+  "first_touch_bytes_per_s": 5038997866.753195,
+  "smt": 2,
+  "simd": "avx2",
+  "l1d_bytes": 32768,
+  "l2_bytes": 262144,
+  "notes": "Intel(R) Core(TM) i7-10610U CPU @ 1.80GHz",
+  "calibration": {
+    "points": 966,
+    "max_threads": 4,
+    "restricted_by_size": false
+  }
+}
