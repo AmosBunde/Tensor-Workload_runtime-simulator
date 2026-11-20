@@ -127,3 +127,36 @@ checked here and will be labelled as unvalidated.
 ## Budget
 
 At most four threads at a time, and under about 45 minutes of measurement in total.
+
+## Amendments
+
+### Made before the validation matrix was measured (20 November 2026)
+
+These changes came from building the simulator against the microbenchmarks and from a dry
+run of the analysis code on synthetic timings generated from a made-up descriptor. No
+measured workload time had been looked at when they were made. The hypotheses are
+unchanged.
+
+1. **The device is two pinned cores, not four free ones.** Other jobs kept the machine
+   busy throughout. Unpinned, a four-thread operator that normally took 36 microseconds
+   sometimes took 3 milliseconds, because it had to wait for the scheduler to free four
+   cores at once. The process now pins itself to both hardware threads of two physical
+   cores. The thread counts are still 1, 2 and 4, but 4 threads now means two cores with
+   hyperthreading. This changes what design (d) asks: it becomes "predict the hyperthreaded
+   configuration from the one- and two-thread configurations". The descriptor gained a
+   per-class hyperthread yield. Under design (d) that yield cannot be calibrated and is set
+   to zero, so the simulator will predict that 4 threads are no faster than 2.
+2. **A guard against interference.** Each measurement records how busy other processes
+   kept the pinned CPUs while it ran. If that exceeds 0.4 CPUs the measurement is repeated,
+   up to four attempts, and the attempt with the least interference is kept.
+3. **Four convolution classes instead of one.** In the microbenchmarks the speed per FLOP
+   of a convolution differed severalfold between 1x1 kernels, layers with three input
+   channels, and 3x3 kernels with and without a stride.
+4. **A first-touch term.** An output above the allocator's 32 MiB threshold is mapped
+   afresh on every call, and the microbenchmarks showed the cost. The descriptor has a
+   rate for it. The memory-bandwidth and first-touch benchmarks describe the machine, not
+   an operator class, so design (b) does not cut them off by size.
+5. **Log-linear regression uses whole-trace totals only.** With per-class totals it
+   produced absurd predictions in the dry run when a class was absent from training. The
+   restricted version is the stronger opponent, so the change does not favour the
+   simulator.
