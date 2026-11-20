@@ -109,8 +109,13 @@ def _class_times(cells: list[dict], device: DeviceDescriptor) -> list[dict[str, 
 def run_design(design: str, cells: list[dict], points: list[dict], full: DeviceDescriptor,
                log=print) -> list[dict]:
     rows: list[dict] = []
+    # A restricted descriptor must describe the same cores as the full one. Reading the
+    # topology of whatever process runs the analysis would count cores that the
+    # measurements were never pinned to.
+    info = {"cores": full.cores, "smt": full.smt, "llc": full.cache_bytes,
+            "l1d": full.l1d_bytes, "l2": full.l2_bytes, "simd": full.simd, "cpu": full.notes}
     for fold, train, test, restriction in FOLDS[design](cells):
-        device = fit_descriptor(points, **restriction) if restriction else full
+        device = fit_descriptor(points, info=info, **restriction) if restriction else full
         train_ct, test_ct = _class_times(train, device), _class_times(test, device)
         measured = [c["t"] for c in train]
         preds = {
