@@ -134,7 +134,7 @@ def _cmd_summarise(args) -> int:
     from .device import DeviceDescriptor
     from .measure import (CLEAN_CUTOFF_MINUTES, clean_pairs, clean_view, drift_table,
                           load_measurements)
-    from .reference import load_reference, summarise_reference
+    from .reference import by_window, load_reference, summarise_reference
     from .stats import (clean_noise, noise_floor, rescaled_simulator, summarise,
                         write_summary)
 
@@ -157,6 +157,13 @@ def _cmd_summarise(args) -> int:
     reference = load_reference(results / "reference.jsonl")
     if reference:
         summary["reference"] = summarise_reference(reference)
+        first = [m["at"] for m in measurements if m["session"] == "main"]
+        second = [m["at"] for m in measurements if m["session"] == "repeat"]
+        windows = {"microbenchmarks": (0.0, min(first) - 1.0),
+                   "first_pass": (min(first) - 1.0, max(first))}
+        if second:
+            windows["second_pass"] = (max(first), max(second) + 600.0)
+        summary["reference"]["by_window"] = by_window(reference, windows)
     device = DeviceDescriptor.load(Path(args.device))
     summary["device"] = {
         "name": device.name, "cpu": device.notes, "cores": device.cores, "smt": device.smt,

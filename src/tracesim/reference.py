@@ -62,6 +62,30 @@ def load_reference(path: Path) -> list[dict]:
     return [json.loads(x) for x in Path(path).read_text().splitlines() if x.strip()]
 
 
+def by_window(rows: list[dict], windows: dict[str, tuple[float, float]]) -> dict:
+    """Probe slowdown and CPU frequency within named time windows.
+
+    Slowdown is each reading over the fastest reading of its probe, averaged over the
+    readings that fall in the window.
+    """
+    fastest = {name: min(r["t"] for r in rows if r["probe"] == name) for name, _ in PROBES
+               if any(r["probe"] == name for r in rows)}
+    out = {}
+    for label, (lo, hi) in windows.items():
+        sub = [r for r in rows if lo <= r["at"] <= hi]
+        if not sub:
+            continue
+        mhz = [r["mhz"] for r in sub if r.get("mhz")]
+        out[label] = {
+            "readings": len(sub),
+            "mean_slowdown_over_fastest": sum(r["t"] / fastest[r["probe"]] for r in sub)
+            / len(sub),
+            "median_cpu_mhz": statistics.median(mhz) if mhz else None,
+            "lowest_cpu_mhz": min(mhz) if mhz else None,
+        }
+    return out
+
+
 def summarise_reference(rows: list[dict]) -> dict:
     """Spread of each probe's timing over the whole run."""
     out: dict = {"probes": {}}

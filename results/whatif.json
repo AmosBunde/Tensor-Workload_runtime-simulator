@@ -1,0 +1,613 @@
+{
+  "projection": {
+    "note": "Unvalidated projection: no such device was measured.",
+    "baseline": "host with 2 threads, one per core",
+    "workloads": {
+      "mlp-w2048-d6-b512/forward": {
+        "scenarios": {
+          "host": {
+            "threads": 2,
+            "predicted_s": 0.15857888739847958,
+            "speedup_over_host": 1.0,
+            "share": {
+              "overhead": 0.0006325619832324813,
+              "compute": 0.9992433818086122,
+              "memory": 0.0,
+              "threading": 0.00012405620815532524
+            },
+            "validated": true
+          },
+          "2x memory bandwidth": {
+            "threads": 2,
+            "predicted_s": 0.15857888739847958,
+            "speedup_over_host": 1.0,
+            "share": {
+              "overhead": 0.0006325619832324813,
+              "compute": 0.9992433818086122,
+              "memory": 0.0,
+              "threading": 0.00012405620815532524
+            },
+            "validated": false
+          },
+          "8 cores": {
+            "threads": 8,
+            "predicted_s": 0.04146651680363715,
+            "speedup_over_host": 3.8242635172233745,
+            "share": {
+              "overhead": 0.0024190837148584435,
+              "compute": 0.997106492653766,
+              "memory": 0.0,
+              "threading": 0.0004744236313754564
+            },
+            "validated": false
+          },
+          "16 cores": {
+            "threads": 16,
+            "predicted_s": 0.021947788371163412,
+            "speedup_over_host": 7.225278680326259,
+            "share": {
+              "overhead": 0.004570436611434546,
+              "compute": 0.9945332227116441,
+              "memory": 0.0,
+              "threading": 0.0008963406769212719
+            },
+            "validated": false
+          },
+          "8 cores, 2x memory bandwidth": {
+            "threads": 8,
+            "predicted_s": 0.04146651680363715,
+            "speedup_over_host": 3.8242635172233745,
+            "share": {
+              "overhead": 0.0024190837148584435,
+              "compute": 0.997106492653766,
+              "memory": 0.0,
+              "threading": 0.0004744236313754564
+            },
+            "validated": false
+          }
+        },
+        "host_measured_s": 0.18427398698986508,
+        "host_prediction_error": -0.1394396464260509
+      },
+      "mlp-w2048-d6-b512/train": {
+        "scenarios": {
+          "host": {
+            "threads": 2,
+            "predicted_s": 0.4707251397027974,
+            "speedup_over_host": 1.0,
+            "share": {
+              "overhead": 0.0025048430487962826,
+              "compute": 0.9709557524093803,
+              "memory": 0.02642206607226702,
+              "threading": 0.00011733846955638609
+            },
+            "validated": true
+          },
+          "2x memory bandwidth": {
+            "threads": 2,
+            "predicted_s": 0.4659845298519911,
+            "speedup_over_host": 1.0101733202437257,
+            "share": {
+              "overhead": 0.0025303256192919566,
+              "compute": 0.997351142189324,
+              "memory": 0.0,
+              "threading": 0.00011853219138409183
+            },
+            "validated": false
+          },
+          "8 cores": {
+            "threads": 8,
+            "predicted_s": 0.1289300686587466,
+            "speedup_over_host": 3.6510113164425393,
+            "share": {
+              "overhead": 0.009145210317067665,
+              "compute": 0.9051254794673067,
+              "memory": 0.08530090613500804,
+              "threading": 0.00042840408061760153
+            },
+            "validated": false
+          },
+          "16 cores": {
+            "threads": 16,
+            "predicted_s": 0.0719642234847381,
+            "speedup_over_host": 6.541099408967109,
+            "share": {
+              "overhead": 0.016384427386036744,
+              "compute": 0.8333584195617163,
+              "memory": 0.14948963045751876,
+              "threading": 0.0007675225947282622
+            },
+            "validated": false
+          },
+          "8 cores, 2x memory bandwidth": {
+            "threads": 8,
+            "predicted_s": 0.12562913786640503,
+            "speedup_over_host": 3.746942370991752,
+            "share": {
+              "overhead": 0.009385502552218957,
+              "compute": 0.9901748369640287,
+              "memory": 0.0,
+              "threading": 0.00043966048375219295
+            },
+            "validated": false
+          }
+        },
+        "host_measured_s": 0.5342220210004598,
+        "host_prediction_error": -0.1188585996113547
+      },
+      "cnn-w64-b2-i64-b4/forward": {
+        "scenarios": {
+          "host": {
+            "threads": 2,
+            "predicted_s": 0.11577448096403921,
+            "speedup_over_host": 1.0,
+            "share": {
+              "overhead": 0.012848555558364255,
+              "compute": 0.9707086442305388,
+              "memory": 0.0,
+              "threading": 0.016442800211096963
+            },
+            "validated": true
+          },
+          "2x memory bandwidth": {
+            "threads": 2,
+            "predicted_s": 0.11577448096403921,
+            "speedup_over_host": 1.0,
+            "share": {
+              "overhead": 0.012848555558364255,
+              "compute": 0.9707086442305388,
+              "memory": 0.0,
+              "threading": 0.016442800211096963
+            },
+            "validated": false
+          },
+          "8 cores": {
+            "threads": 8,
+            "predicted_s": 0.03590750891340661,
+            "speedup_over_host": 3.224241515701833,
+            "share": {
+              "overhead": 0.04142684624807959,
+              "compute": 0.8748958919266909,
+              "memory": 0.0,
+              "threading": 0.0836772618252295
+            },
+            "validated": false
+          },
+          "16 cores": {
+            "threads": 16,
+            "predicted_s": 0.022596346904967847,
+            "speedup_over_host": 5.123592829006621,
+            "share": {
+              "overhead": 0.0658307671219283,
+              "compute": 0.7930783034881272,
+              "memory": 0.0,
+              "threading": 0.14109092938994447
+            },
+            "validated": false
+          },
+          "8 cores, 2x memory bandwidth": {
+            "threads": 8,
+            "predicted_s": 0.03590750891340661,
+            "speedup_over_host": 3.224241515701833,
+            "share": {
+              "overhead": 0.04142684624807959,
+              "compute": 0.8748958919266909,
+              "memory": 0.0,
+              "threading": 0.0836772618252295
+            },
+            "validated": false
+          }
+        },
+        "host_measured_s": 0.0870963390043471,
+        "host_prediction_error": 0.32926920106550917
+      },
+      "cnn-w64-b2-i64-b4/train": {
+        "scenarios": {
+          "host": {
+            "threads": 2,
+            "predicted_s": 0.36250370805291404,
+            "speedup_over_host": 1.0,
+            "share": {
+              "overhead": 0.018602393323615636,
+              "compute": 0.9626321483973771,
+              "memory": 0.0,
+              "threading": 0.018765458279007316
+            },
+            "validated": true
+          },
+          "2x memory bandwidth": {
+            "threads": 2,
+            "predicted_s": 0.36250370805291404,
+            "speedup_over_host": 1.0,
+            "share": {
+              "overhead": 0.018602393323615636,
+              "compute": 0.9626321483973771,
+              "memory": 0.0,
+              "threading": 0.018765458279007316
+            },
+            "validated": false
+          },
+          "8 cores": {
+            "threads": 8,
+            "predicted_s": 0.10966267139972845,
+            "speedup_over_host": 3.305625363908577,
+            "share": {
+              "overhead": 0.061492543199947486,
+              "compute": 0.8398518717482932,
+              "memory": 0.0,
+              "threading": 0.09865558505175921
+            },
+            "validated": false
+          },
+          "16 cores": {
+            "threads": 16,
+            "predicted_s": 0.06752249862419743,
+            "speedup_over_host": 5.3686358686230085,
+            "share": {
+              "overhead": 0.0998694760393962,
+              "compute": 0.7299914388853387,
+              "memory": 0.0,
+              "threading": 0.17013908507526507
+            },
+            "validated": false
+          },
+          "8 cores, 2x memory bandwidth": {
+            "threads": 8,
+            "predicted_s": 0.10966267139972845,
+            "speedup_over_host": 3.305625363908577,
+            "share": {
+              "overhead": 0.061492543199947486,
+              "compute": 0.8398518717482932,
+              "memory": 0.0,
+              "threading": 0.09865558505175921
+            },
+            "validated": false
+          }
+        },
+        "host_measured_s": 0.49381302800611593,
+        "host_prediction_error": -0.2659089827649821
+      },
+      "transformer-d512-d4-s128-b8/forward": {
+        "scenarios": {
+          "host": {
+            "threads": 2,
+            "predicted_s": 0.2056146121966388,
+            "speedup_over_host": 1.0,
+            "share": {
+              "overhead": 0.003690039659144608,
+              "compute": 0.9868312240270658,
+              "memory": 0.0,
+              "threading": 0.009478736313789609
+            },
+            "validated": true
+          },
+          "2x memory bandwidth": {
+            "threads": 2,
+            "predicted_s": 0.2056146121966388,
+            "speedup_over_host": 1.0,
+            "share": {
+              "overhead": 0.003690039659144608,
+              "compute": 0.9868312240270658,
+              "memory": 0.0,
+              "threading": 0.009478736313789609
+            },
+            "validated": false
+          },
+          "8 cores": {
+            "threads": 8,
+            "predicted_s": 0.057221137563735903,
+            "speedup_over_host": 3.5933331798518418,
+            "share": {
+              "overhead": 0.0132595419421735,
+              "compute": 0.9293938536520654,
+              "memory": 0.0,
+              "threading": 0.05734660440576111
+            },
+            "validated": false
+          },
+          "16 cores": {
+            "threads": 16,
+            "predicted_s": 0.032597174237531126,
+            "speedup_over_host": 6.307743447280227,
+            "share": {
+              "overhead": 0.023275823480173572,
+              "compute": 0.8448004288303154,
+              "memory": 0.052804111652154456,
+              "threading": 0.07911963603735658
+            },
+            "validated": false
+          },
+          "8 cores, 2x memory bandwidth": {
+            "threads": 8,
+            "predicted_s": 0.057221137563735903,
+            "speedup_over_host": 3.5933331798518418,
+            "share": {
+              "overhead": 0.0132595419421735,
+              "compute": 0.9293938536520654,
+              "memory": 0.0,
+              "threading": 0.05734660440576111
+            },
+            "validated": false
+          }
+        },
+        "host_measured_s": 0.22947796699008904,
+        "host_prediction_error": -0.10398974292151064
+      },
+      "transformer-d512-d4-s128-b8/train": {
+        "scenarios": {
+          "host": {
+            "threads": 2,
+            "predicted_s": 0.6027155360860715,
+            "speedup_over_host": 1.0,
+            "share": {
+              "overhead": 0.011872341195201449,
+              "compute": 0.9784429951927656,
+              "memory": 0.0,
+              "threading": 0.009684663612033042
+            },
+            "validated": true
+          },
+          "2x memory bandwidth": {
+            "threads": 2,
+            "predicted_s": 0.6027155360860715,
+            "speedup_over_host": 1.0,
+            "share": {
+              "overhead": 0.011872341195201449,
+              "compute": 0.9784429951927656,
+              "memory": 0.0,
+              "threading": 0.009684663612033042
+            },
+            "validated": false
+          },
+          "8 cores": {
+            "threads": 8,
+            "predicted_s": 0.17114914850578597,
+            "speedup_over_host": 3.5215806876520674,
+            "share": {
+              "overhead": 0.04180940747023755,
+              "compute": 0.9003381947369287,
+              "memory": 0.0,
+              "threading": 0.057852397792833826
+            },
+            "validated": false
+          },
+          "16 cores": {
+            "threads": 16,
+            "predicted_s": 0.09948211679347138,
+            "speedup_over_host": 6.0585314779472546,
+            "share": {
+              "overhead": 0.07192895284805811,
+              "compute": 0.8024485005126762,
+              "memory": 0.041656703861012834,
+              "threading": 0.08396584277825292
+            },
+            "validated": false
+          },
+          "8 cores, 2x memory bandwidth": {
+            "threads": 8,
+            "predicted_s": 0.17114914850578597,
+            "speedup_over_host": 3.5215806876520674,
+            "share": {
+              "overhead": 0.04180940747023755,
+              "compute": 0.9003381947369287,
+              "memory": 0.0,
+              "threading": 0.057852397792833826
+            },
+            "validated": false
+          }
+        },
+        "host_measured_s": 0.7169215790054295,
+        "host_prediction_error": -0.15930060729625917
+      },
+      "mixer-d512-d4-i64-b8/forward": {
+        "scenarios": {
+          "host": {
+            "threads": 2,
+            "predicted_s": 0.2932083503019274,
+            "speedup_over_host": 1.0,
+            "share": {
+              "overhead": 0.0019759815586712077,
+              "compute": 0.9928477639669462,
+              "memory": 0.0,
+              "threading": 0.00517625447438258
+            },
+            "validated": true
+          },
+          "2x memory bandwidth": {
+            "threads": 2,
+            "predicted_s": 0.2932083503019274,
+            "speedup_over_host": 1.0,
+            "share": {
+              "overhead": 0.0019759815586712077,
+              "compute": 0.9928477639669462,
+              "memory": 0.0,
+              "threading": 0.00517625447438258
+            },
+            "validated": false
+          },
+          "8 cores": {
+            "threads": 8,
+            "predicted_s": 0.07901786289205506,
+            "speedup_over_host": 3.710659078472854,
+            "share": {
+              "overhead": 0.0073321939095782615,
+              "compute": 0.915407828956162,
+              "memory": 0.06680728401676278,
+              "threading": 0.010452693117496987
+            },
+            "validated": false
+          },
+          "16 cores": {
+            "threads": 16,
+            "predicted_s": 0.04432366986374461,
+            "speedup_over_host": 6.615164114417402,
+            "share": {
+              "overhead": 0.013071442297672339,
+              "compute": 0.8507133147137895,
+              "memory": 0.11650196158901095,
+              "threading": 0.019713281399527174
+            },
+            "validated": false
+          },
+          "8 cores, 2x memory bandwidth": {
+            "threads": 8,
+            "predicted_s": 0.07812242462369214,
+            "speedup_over_host": 3.7531906071052266,
+            "share": {
+              "overhead": 0.007416235425817925,
+              "compute": 0.9611547584593864,
+              "memory": 0.0,
+              "threading": 0.031429006114795696
+            },
+            "validated": false
+          }
+        },
+        "host_measured_s": 0.3532937429845333,
+        "host_prediction_error": -0.17007205441857032
+      },
+      "mixer-d512-d4-i64-b8/train": {
+        "scenarios": {
+          "host": {
+            "threads": 2,
+            "predicted_s": 0.8528702427244375,
+            "speedup_over_host": 1.0,
+            "share": {
+              "overhead": 0.005647594087822672,
+              "compute": 0.9901382291910912,
+              "memory": 0.0,
+              "threading": 0.004214176721086134
+            },
+            "validated": true
+          },
+          "2x memory bandwidth": {
+            "threads": 2,
+            "predicted_s": 0.8528702427244375,
+            "speedup_over_host": 1.0,
+            "share": {
+              "overhead": 0.005647594087822672,
+              "compute": 0.9901382291910912,
+              "memory": 0.0,
+              "threading": 0.004214176721086134
+            },
+            "validated": false
+          },
+          "8 cores": {
+            "threads": 8,
+            "predicted_s": 0.22919472163632978,
+            "speedup_over_host": 3.7211600539287835,
+            "share": {
+              "overhead": 0.021015601520410113,
+              "compute": 0.9153932923034346,
+              "memory": 0.05545321246140954,
+              "threading": 0.00813789371474577
+            },
+            "validated": false
+          },
+          "16 cores": {
+            "threads": 16,
+            "predicted_s": 0.12766655349560813,
+            "speedup_over_host": 6.680451687401251,
+            "share": {
+              "overhead": 0.03772847945375234,
+              "compute": 0.8494620746930288,
+              "memory": 0.09738095762587234,
+              "threading": 0.015428488227346458
+            },
+            "validated": false
+          },
+          "8 cores, 2x memory bandwidth": {
+            "threads": 8,
+            "predicted_s": 0.2270388749288504,
+            "speedup_over_host": 3.7564943139879046,
+            "share": {
+              "overhead": 0.02121515507861759,
+              "compute": 0.9532914485330277,
+              "memory": 0.0,
+              "threading": 0.025493396388354676
+            },
+            "validated": false
+          }
+        },
+        "host_measured_s": 1.1203966540051624,
+        "host_prediction_error": -0.2387783025987975
+      }
+    }
+  },
+  "breakdown": {
+    "threads": 2,
+    "workloads": {
+      "mlp-w64-d2-b1": {
+        "predicted_s": 4.145182552888959e-05,
+        "share": {
+          "overhead": 0.9738279341968541,
+          "compute": 0.026172065803145843,
+          "memory": 0.0,
+          "threading": 0.0
+        }
+      },
+      "mlp-w2048-d6-b512": {
+        "predicted_s": 0.15857888739847958,
+        "share": {
+          "overhead": 0.0006325619832324813,
+          "compute": 0.9992433818086122,
+          "memory": 0.0,
+          "threading": 0.00012405620815532524
+        }
+      },
+      "cnn-w16-b1-i32-b1": {
+        "predicted_s": 0.0012193473341813872,
+        "share": {
+          "overhead": 0.753768433827167,
+          "compute": 0.24331317520906007,
+          "memory": 0.0,
+          "threading": 0.002918390963772963
+        }
+      },
+      "cnn-w64-b2-i64-b4": {
+        "predicted_s": 0.11577448096403921,
+        "share": {
+          "overhead": 0.012848555558364255,
+          "compute": 0.9707086442305388,
+          "memory": 0.0,
+          "threading": 0.016442800211096963
+        }
+      },
+      "transformer-d64-d2-s32-b1": {
+        "predicted_s": 0.0004938286623919924,
+        "share": {
+          "overhead": 0.7878056039575853,
+          "compute": 0.17647601634463547,
+          "memory": 0.0,
+          "threading": 0.03571837969777936
+        }
+      },
+      "transformer-d512-d4-s128-b8": {
+        "predicted_s": 0.2056146121966388,
+        "share": {
+          "overhead": 0.003690039659144608,
+          "compute": 0.9868312240270658,
+          "memory": 0.0,
+          "threading": 0.009478736313789609
+        }
+      },
+      "mixer-d64-d2-i32-b1": {
+        "predicted_s": 0.0005202689024745379,
+        "share": {
+          "overhead": 0.6685924933561491,
+          "compute": 0.2870977584817289,
+          "memory": 0.0,
+          "threading": 0.04430974816212186
+        }
+      },
+      "mixer-d512-d4-i64-b8": {
+        "predicted_s": 0.2932083503019274,
+        "share": {
+          "overhead": 0.0019759815586712077,
+          "compute": 0.9928477639669462,
+          "memory": 0.0,
+          "threading": 0.00517625447438258
+        }
+      }
+    }
+  }
+}
